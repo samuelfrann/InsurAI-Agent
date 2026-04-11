@@ -1,0 +1,15 @@
+# --- Secrets & Keys ---
+.env
+
+# --- Virtual Environments ---
+.venv/
+venv/
+env/
+
+# --- Databases & Heavy Data ---
+chroma_db/
+data/
+
+# --- Python Cache ---
+__pycache__/
+*.pyc
