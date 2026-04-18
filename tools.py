@@ -1,3 +1,4 @@
+import joblib
 from datetime import datetime 
 from langchain_core.tools import Tool
 from langchain_community.tools import WikipediaQueryRun, DuckDuckGoSearchRun
@@ -14,3 +15,7 @@ search_tool = Tool(
 
 api_wrapper = WikipediaAPIWrapper(top_k_results=5, doc_content_chars_max=100)
 wiki_tool = WikipediaQueryRun(api_wrapper=api_wrapper)
+
+
+@Tool
+def detect_fraud_claim()

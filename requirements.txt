@@ -30,3 +30,16 @@ langchain-huggingface
 sentence-transformers
 pypdf
 langchain
+
+# Force pip to use the CPU-only versions of PyTorch to save gigabytes of space
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+sentence-transformers
+chromadb
+langchain-chroma
+langchain-anthropic
+pypdf
+fastapi
+uvicorn
+mangum
+python-dotenv
