@@ -1,15 +1,57 @@
-# --- Secrets & Keys ---
+# ── Secrets & Keys ────────────────────────────────
 .env
+.env.local
+*.env
 
-# --- Virtual Environments ---
+# ── Python ────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
 .venv/
 venv/
 env/
+*.egg-info/
 
-# --- Databases & Heavy Data ---
+# ── ML Models (large binary files) ────────────────
+models/*.cbm
+models/*.pkl
+models/*.joblib
+artifacts/*.cbm
+artifacts/*.pkl
+
+# ── Knowledge Base (copyrighted + large) ──────────
 chroma_db/
-data/
+insurance_docs/
+textbooks/
+naicom_docs/
 
-# --- Python Cache ---
-__pycache__/
-*.pyc
+# ── User Data & Sessions ─────────────────────────
+insurai_sessions.db
+insurai_memory/
+*.sqlite3
+*.db
+*users.json
+
+# ── Node / Frontend Build ─────────────────────────
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# ── IDE ───────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── OS ────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Logs ──────────────────────────────────────────
+*.log
+npm-debug.log*
+
+# ── Scripts output ────────────────────────────────
+scripts/__pycache__/

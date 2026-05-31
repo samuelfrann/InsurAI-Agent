@@ -1,80 +1,51 @@
-import ast
-from pydantic import BaseModel
-from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+import os
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv())
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from langchain_classic.agents import create_tool_calling_agent, AgentExecutor
-from langchain_anthropic import ChatAnthropic
-from langchain_core.prompts import ChatPromptTemplate
-from tools import search_tool, wiki_tool
+from fastapi.responses import FileResponse
+from pathlib import Path
 
-load_dotenv()
+from backend.core.lifespan import lifespan
+from backend.api import auth, chat, dashboard, fraud
+from backend.db.database import init_db, seed_default_admin
+from backend.config import settings
 
+init_db()
+seed_default_admin(settings.default_password)
 
-llm = ChatAnthropic(model='claude-haiku-4-5-20251001')
-tools = [search_tool, wiki_tool]
+app = FastAPI(title="InsurAI Copilot API", lifespan=lifespan)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-prompt = ChatPromptTemplate.from_messages([
-    ('system', '''You are a friendly and knowledgeable insurance claims assistant.
-    Use your tools to research any topic. 
-    Always end by offering help with insurance claims specifically.'''),
-    ('placeholder', '{chat_history}'),
-    ('human', '{query}'),
-    ('placeholder', '{agent_scratchpad}'),
-])
+app.include_router(auth.router)
+app.include_router(chat.router)
+app.include_router(dashboard.router)
+app.include_router(fraud.router)
 
+# SPA fallback for React frontend
+_DIST = Path(__file__).parent / "frontend" / "dist"
+if (_DIST / "assets").is_dir():
+    app.mount("/assets", StaticFiles(directory=str(_DIST / "assets")), name="vite-assets")
 
-agent = create_tool_calling_agent(llm, tools, prompt)
-agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+def _spa():
+    dist_index = _DIST / "index.html"
+    return FileResponse(str(dist_index)) if dist_index.exists() else FileResponse("index.html")
 
+for _path in ["/", "/login", "/chat", "/dashboard", "/analytics"]:
+    app.add_api_route(_path, _spa, methods=["GET"])
 
-app = FastAPI(title="Insurance Agent API")
-
-
-class ChatRequest(BaseModel):
-    query: str
-
-
-@app.get('/')
-async def serve_frontend():
-    return FileResponse('index.html')
-
-@app.get("/insurance_agent_icon.png")
-async def serve_logo():
-    return FileResponse("insurance_agent_icon.png")
-
-@app.post("/chat")
-async def chat_endpoint(request: ChatRequest):
-    try:
-        # Run the agent
-        result = agent_executor.invoke({"query": request.query})
-        raw_output = result["output"]
-
-        # --- 3. CLEANUP LOGIC (The "Jargon" Filter) ---
-        final_text = ""
-        
-        if isinstance(raw_output, str):
-            clean_str = raw_output.strip()
-            # Check for the "fake list" string: "[{'text': ..."
-            if clean_str.startswith('[{'):
-                real_list = ast.literal_eval(clean_str)
-                final_text = real_list[0]['text']
-            else:
-                final_text = clean_str
-        elif isinstance(raw_output, list):
-            final_text = raw_output[0]['text']
-        else:
-            final_text = str(raw_output)
-
-        return {"response": final_text}
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
+@app.get("/health")
+async def health(): return {"status": "ok"}
 
 if __name__ == "__main__":
     import uvicorn
-    # 0.0.0.0 is required for Docker/AWS deployment
     uvicorn.run(app, host="0.0.0.0", port=8000)
