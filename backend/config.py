@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     "http://localhost:5173",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+    "https://insurai-agent.onrender.com",
+    "https://samuelfrann-insurai-copilot.hf.space",
 ]
 
     # Paths (relative to project root — no more hardcoded /home/frank/...)
