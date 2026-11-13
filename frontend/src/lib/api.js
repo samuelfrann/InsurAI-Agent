@@ -1,11 +1,19 @@
 const BASE = import.meta.env.VITE_API_URL || ''
 
-export const getToken = () => localStorage.getItem('insurai_token')
-export const getUser  = () => localStorage.getItem('insurai_user') || 'User'
+export const getToken = () => sessionStorage.getItem('insurai_token')
+export const getUser  = () => sessionStorage.getItem('insurai_user') || 'User'
 
-export function authFetch(path, options = {}) {
+export function logout() {
+  sessionStorage.removeItem('insurai_token')
+  sessionStorage.removeItem('insurai_user')
+  fetch(BASE + '/logout', { method: 'POST' }).finally(() => {
+    window.location.href = '/login'
+  })
+}
+
+export async function authFetch(path, options = {}) {
   const token = getToken()
-  return fetch(BASE + path, {
+  const res = await fetch(BASE + path, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -13,14 +21,8 @@ export function authFetch(path, options = {}) {
       ...(options.headers || {}),
     },
   })
-}
-
-export function logout() {
-  localStorage.removeItem('insurai_token')
-  localStorage.removeItem('insurai_user')
-  fetch(BASE + '/logout', { method: 'POST' }).finally(() => {
-    window.location.href = '/login'
-  })
+  if (res.status === 401 && token) logout()
+  return res
 }
 
 export function newThreadId() {

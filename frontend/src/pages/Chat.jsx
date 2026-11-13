@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useOutletContext } from 'react-router-dom'
-import { authFetch, getUser, newThreadId, logout } from '../lib/api'
+import { authFetch, getUser, newThreadId, logout, getToken } from '../lib/api'
 import { isFraudResult, parseFraudResult } from '../components/FraudCard'
 
 import MessageBubble from '../components/MessageBubble'
@@ -28,6 +28,7 @@ export default function Chat() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const messagesEndRef = useRef(null)
+  const skipLoadRef = useRef(null)
 
   // Scroll to bottom
   useEffect(() => {
@@ -65,7 +66,11 @@ export default function Chat() {
   }, [])
 
   useEffect(() => {
-    if (currentThreadId) {
+     if (currentThreadId) {
+      if (skipLoadRef.current === currentThreadId) {
+        skipLoadRef.current = null
+        return
+      }
       loadSession(currentThreadId)
       return
     }
@@ -94,7 +99,10 @@ export default function Chat() {
     setStatus('Thinking…')
 
     const activeThreadId = currentThreadId || newThreadId()
-    if (!currentThreadId) setCurrentThreadId(activeThreadId)
+    if (!currentThreadId) {
+      skipLoadRef.current = activeThreadId
+      setCurrentThreadId(activeThreadId)
+    }
 
     const payload = {
       query,
@@ -103,7 +111,7 @@ export default function Chat() {
     }
 
     try {
-      const token = localStorage.getItem('insurai_token')
+      const token = getToken()
       const res   = await fetch(BASE + '/chat/stream', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -137,11 +145,6 @@ export default function Chat() {
 
           if (evt.status) {
             setStatus(evt.status + '…')
-            if (!firstToken) {
-              setMessages(prev => prev.map(m =>
-                m.id === aiId ? { ...m, content: evt.status + '…' } : m
-              ))
-            }
           }
 
           if (evt.token) {

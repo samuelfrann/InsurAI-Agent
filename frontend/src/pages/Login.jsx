@@ -34,8 +34,8 @@ export default function Login() {
         setError(data.detail || 'Incorrect username or password.')
         return
       }
-      localStorage.setItem('insurai_token', data.access_token)
-      localStorage.setItem('insurai_user', data.username)
+      sessionStorage.setItem('insurai_token', data.access_token)
+      sessionStorage.setItem('insurai_user', data.username)
       navigate('/chat', { replace: true })
     } catch {
       setError('Server unreachable. Make sure the API is running.')
@@ -144,7 +144,7 @@ export default function Login() {
             {/* Error */}
             {error && (
               <div
-                className="rounded-lg px-3 py-2 text-xs"
+                className="rounded-lg px-3 fpy-2 text-xs"
                 style={{ background: 'var(--danger-bg)', color: 'var(--danger)' }}
               >
                 {error}

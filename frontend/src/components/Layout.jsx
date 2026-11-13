@@ -21,7 +21,7 @@ export default function Layout() {
   }, [darkMode])
 
 
-  const username = localStorage.getItem('insurai_user') || 'Admin'
+  const username = sessionStorage.getItem('insurai_user') || 'Admin'
 
   const fetchSessions = () => {
     authFetch('/sessions')

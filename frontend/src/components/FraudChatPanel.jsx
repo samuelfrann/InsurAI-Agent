@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { marked } from 'marked'
 import { authFetch } from '../lib/api'
+import { getToken } from '../lib/api'
 
 marked.setOptions({ breaks: true })
 
@@ -217,7 +218,7 @@ ${EXTRACTION_HINT}`
     }
 
     const threadId = await ensureThreadId()
-    const token    = localStorage.getItem('insurai_token')
+    const token    = getToken()
 
     try {
       const res = await fetch(BASE + '/fraud/chat/stream', {
