@@ -76,7 +76,7 @@ Rules:
 
 
 # ── LLM singleton ──────────────────────────────────────────────────────────
-llm = ChatAnthropic(model="claude-sonnet-4-20250514")
+llm = ChatAnthropic(model="claude-sonnet-5-5")
 
 # ── System prompts ─────────────────────────────────────────────────────────
 MAIN_PROMPT = '''You are InsurAI Copilot, an AI assistant for insurance company staff.

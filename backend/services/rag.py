@@ -49,7 +49,7 @@ def _build_hybrid_retriever():
 
 @lru_cache(maxsize=1)
 def _get_rewrite_llm():
-    return ChatAnthropic(model="claude-sonnet-4-6", max_tokens=80)
+    return ChatAnthropic(model=os.getenv("ANTHROPIC_MODEL", "claude-sonnet-5-5"), max_tokens=80)
 
 
 class _SmartRetriever(BaseRetriever):

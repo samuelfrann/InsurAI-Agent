@@ -55,3 +55,4 @@ npm-debug.log*
 
 # ── Scripts output ────────────────────────────────
 scripts/__pycache__/
+.hf-deploy/

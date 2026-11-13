@@ -2,7 +2,6 @@
 --extra-index-url https://download.pytorch.org/whl/cpu
 
 anthropic
-asyncio
 PyJWT
 bcrypt
 chromadb
@@ -18,15 +17,10 @@ langchain-chroma
 langchain-classic
 langchain-community
 langchain-core>=0.2.0
-langchain-google-genai
 langchain-huggingface
-langchain-openai
 langgraph
 langgraph-checkpoint-sqlite
-langserve[all]
-mangum
 numpy
-opencv-python
 pandas
 pillow
 pydantic
@@ -51,5 +45,6 @@ python-multipart
 pdfplumber
 langchain-aws 
 boto3
-Optional
-rank_bm25 
+rank_bm25
+catboost
+pydantic-settings

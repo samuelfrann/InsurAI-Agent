@@ -213,7 +213,7 @@ Be direct and concise. Do not pad responses with unnecessary formatting.
 '''
 
 
-llm = ChatAnthropic(model='claude-sonnet-4-6')
+llm = ChatAnthropic(model=os.getenv('ANTHROPIC_MODEL', 'claude-sonnet-5-5'))
 
 
 async def main():

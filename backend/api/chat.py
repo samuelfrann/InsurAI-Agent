@@ -16,6 +16,18 @@ from backend.services.tools import file_store   # ← fixed
 router = APIRouter()
 
 # ── Schemas ───────────────────────────────────────────────────────────────────
+def _text(content):
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        return "".join(
+            b.get("text", "") if isinstance(b, dict) else str(b)
+            for b in content
+            if not isinstance(b, dict) or b.get("type") == "text"
+        )
+    return str(content)
+
+
 class RenameRequest(BaseModel):
     title: str
 
@@ -133,9 +145,9 @@ async def _stream(bot, request: ChatRequest, current_user: str, session_type: st
                     label = _STATUS_LABELS.get(event.get("name", ""), f"Using {event.get('name', '')}")
                     yield f"data: {json.dumps({'status': label})}\n\n"
                 elif kind == "on_chat_model_stream" and node == "claude_summarizer":
-                    content = event["data"]["chunk"].content
+                    content = _text(event["data"]["chunk"].content)
                     if content:
-                        full_response += content
+                        full_response += _text(content)
                         yield f"data: {json.dumps({'token': content})}\n\n"
         except Exception as e:
             import traceback; traceback.print_exc()
@@ -157,7 +169,7 @@ async def _stream(bot, request: ChatRequest, current_user: str, session_type: st
                             f"Write a short 3-6 word title for a conversation that starts with this message. "
                             f"Return ONLY the title, no punctuation, no quotes:\n\n{request.query[:200]}"
                         ))])
-                        title = title_msg.content.strip().strip('"').strip("'")[:60]
+                        title = _text(title_msg.content).strip().strip('"').strip("'")[:60]
                     except Exception:
                         title = request.query[:55] + ("…" if len(request.query) > 55 else "")
                 else:
@@ -201,9 +213,9 @@ async def chat_endpoint(request: ChatRequest, fastapi_req: Request, current_user
         async for event in bot.graph.astream_events({"messages": messages}, config):
             if (event["event"] == "on_chat_model_stream"
                     and event.get("metadata", {}).get("langgraph_node") == "claude_summarizer"):
-                content = event["data"]["chunk"].content
+                content = _text(event["data"]["chunk"].content)
                 if content:
-                    full_response += content
+                    full_response += _text(content)
         return {"response": full_response or "I wasn't able to generate a response. Please try again."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
